@@ -99,3 +99,150 @@ sequenceDiagram
     FrontendApp->>User: Displays FinWise Buddy's response in chat
 ```
 
+---
+
+### 4. Asset & Liability Consolidation
+
+This diagram shows how a user adds an asset or liability and views their net worth.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant FrontendApp as "FinWise Buddy UI"
+    participant Backend as "Backend (Supabase)"
+    participant Database as "DB (PostgreSQL)"
+
+    User->>FrontendApp: Clicks "Add Asset/Liability"
+    FrontendApp->>User: Shows asset/liability form
+    User->>FrontendApp: Fills out and submits form
+    FrontendApp->>Backend: Sends asset/liability data
+    activate Backend
+    Backend->>Database: Writes new asset/liability record
+    Database-->>Backend: Confirms write success
+    Backend-->>FrontendApp: Returns success response
+    deactivate Backend
+    FrontendApp->>User: Shows success message and updates list
+
+    loop Periodically
+        User->>FrontendApp: Navigates to Overview/Dashboard
+        FrontendApp->>Backend: Requests net worth data
+        activate Backend
+        Backend->>Database: Queries all assets and liabilities over time
+        Database-->>Backend: Returns historical data
+        Backend-->>FrontendApp: Returns data formatted for chart
+        deactivate Backend
+        FrontendApp->>User: Displays net worth chart
+    end
+```
+
+---
+
+### 5. Income & Expense Budgeting
+
+This diagram shows how a user sets a budget and gets alerted.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant FrontendApp as "FinWise Buddy UI"
+    participant Backend as "Backend (Supabase)"
+    participant Database as "DB (PostgreSQL)"
+
+    User->>FrontendApp: Clicks "Create Budget"
+    FrontendApp->>User: Shows budget form (category, amount)
+    User->>FrontendApp: Fills out and submits form
+    FrontendApp->>Backend: Sends new budget data
+    activate Backend
+    Backend->>Database: Writes new budget record
+    Database-->>Backend: Confirms write success
+    Backend-->>FrontendApp: Returns success response
+    deactivate Backend
+    FrontendApp->>User: Shows success message
+
+    Note over Backend, Database: On a new transaction or scheduled check...
+    Backend->>Backend: Compares expenses against budgets
+    alt Spending exceeds budget
+        Backend->>FrontendApp: Sends budget alert notification
+        FrontendApp->>User: Displays alert (e.g., "You've overspent on Food!")
+    end
+```
+
+---
+
+### 6. Savings Goals & AI Supervision
+
+This diagram shows how a user creates a savings goal and how FinWise Buddy supervises it.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant FrontendApp as "FinWise Buddy UI"
+    participant Backend as "Backend (Supabase Edge Function)"
+    participant AiService as "GCP Gemini API"
+    participant Database as "DB (PostgreSQL)"
+
+    User->>FrontendApp: Clicks "Create Savings Goal"
+    FrontendApp->>User: Shows savings goal form
+    User->>FrontendApp: Fills out and submits form (name, amount, deadline)
+    FrontendApp->>Backend: Sends new goal data
+    activate Backend
+    Backend->>Database: Writes new savings goal record
+    Database-->>Backend: Confirms write success
+    Backend-->>FrontendApp: Returns success response
+    deactivate Backend
+    FrontendApp->>User: Shows new goal with progress bar
+
+    Note over Backend, AiService: On a trigger (e.g., login, weekly check)...
+    Backend->>Database: Fetches savings goals & recent transactions
+    activate Backend
+    Database-->>Backend: Returns user data
+    Backend->>AiService: Sends prompt (goal progress, spending data, character personality)
+    activate AiService
+    AiService-->>Backend: Returns generated playful/supervisory message
+    deactivate AiService
+    Backend-->>FrontendApp: Forwards AI message
+    deactivate Backend
+    FrontendApp->>User: Displays FinWise Buddy's encouragement/nudge
+```
+
+---
+
+### 7. Socialized Saving (Invite Friends)
+
+This diagram illustrates the process of inviting a friend to a shared savings goal.
+
+```mermaid
+sequenceDiagram
+    participant UserA as "Initiator"
+    participant FrontendAppA as "UserA's UI"
+    participant Backend as "Backend (Supabase)"
+    participant Database as "DB (PostgreSQL)"
+    participant FrontendAppB as "UserB's UI"
+    participant UserB as "Invitee"
+
+    UserA->>FrontendAppA: Clicks "Invite to Goal" on a savings goal
+    FrontendAppA->>Backend: Sends invitation request (goalId, inviteeId)
+    activate Backend
+    Backend->>Database: Creates invitation record (status: pending)
+    Backend->>FrontendAppB: Sends notification to UserB
+    deactivate Backend
+
+    UserB->>FrontendAppB: Clicks on invitation
+    FrontendAppB->>UserB: Shows shared goal details
+    UserB->>FrontendAppB: Clicks "Accept"
+    FrontendAppB->>Backend: Sends acceptance
+    activate Backend
+    Backend->>Database: Updates invitation (status: accepted), links UserB to goal
+    deactivate Backend
+
+    loop Later
+        UserA->>FrontendAppA: Views shared goal
+        FrontendAppA->>Backend: Requests shared goal progress
+        activate Backend
+        Backend->>Database: Queries progress for all participants
+        Database-->>Backend: Returns ANONYMIZED progress percentages
+        Backend-->>FrontendAppA: Sends progress data (e.g., {user: 'You', ...}, {user: 'UserB', ...})
+        deactivate Backend
+        FrontendAppA->>UserA: Displays progress for all members
+    end
+```
