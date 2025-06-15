@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, CreditCard, PiggyBank, Activity } from "lucide-react";
+import { DollarSign, CreditCard, PiggyBank } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -10,6 +10,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const transactions = [
   {
@@ -39,9 +42,26 @@ const transactions = [
 ];
 
 const Dashboard = () => {
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Error signing out",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Signed out successfully.",
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Income</CardTitle>
@@ -72,8 +92,13 @@ const Dashboard = () => {
             <p className="text-xs text-muted-foreground">Your current available balance</p>
           </CardContent>
         </Card>
+        <Card className="flex items-center justify-center">
+          <Button onClick={handleSignOut} variant="outline">
+            Sign Out
+          </Button>
+        </Card>
       </div>
-       <Card>
+      <Card>
         <CardHeader>
           <CardTitle>Recent Transactions</CardTitle>
           <CardDescription>
@@ -102,12 +127,11 @@ const Dashboard = () => {
                   <TableCell>{transaction.date}</TableCell>
                   <TableCell
                     className={`text-right ${
-                      transaction.type === "income"
-                        ? "text-primary"
-                        : ""
+                      transaction.type === "income" ? "text-primary" : ""
                     }`}
                   >
-                    {transaction.type === "income" ? "+" : ""}${Math.abs(transaction.amount).toFixed(2)}
+                    {transaction.type === "income" ? "+" : ""}$
+                    {Math.abs(transaction.amount).toFixed(2)}
                   </TableCell>
                 </TableRow>
               ))}
@@ -120,4 +144,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

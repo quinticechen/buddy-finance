@@ -9,7 +9,45 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      transactions: {
+        Row: {
+          amount: number
+          category: string | null
+          created_at: string
+          date: string
+          description: string | null
+          end_date: string | null
+          frequency: Database["public"]["Enums"]["transaction_frequency"]
+          id: string
+          type: Database["public"]["Enums"]["transaction_type"]
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category?: string | null
+          created_at?: string
+          date: string
+          description?: string | null
+          end_date?: string | null
+          frequency?: Database["public"]["Enums"]["transaction_frequency"]
+          id?: string
+          type: Database["public"]["Enums"]["transaction_type"]
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          date?: string
+          description?: string | null
+          end_date?: string | null
+          frequency?: Database["public"]["Enums"]["transaction_frequency"]
+          id?: string
+          type?: Database["public"]["Enums"]["transaction_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +56,15 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      transaction_frequency:
+        | "one-time"
+        | "daily"
+        | "weekly"
+        | "bi-weekly"
+        | "monthly"
+        | "quarterly"
+        | "yearly"
+      transaction_type: "income" | "expense"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +179,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      transaction_frequency: [
+        "one-time",
+        "daily",
+        "weekly",
+        "bi-weekly",
+        "monthly",
+        "quarterly",
+        "yearly",
+      ],
+      transaction_type: ["income", "expense"],
+    },
   },
 } as const
